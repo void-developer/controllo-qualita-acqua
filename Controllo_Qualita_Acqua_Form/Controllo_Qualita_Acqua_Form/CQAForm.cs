@@ -4,6 +4,8 @@ namespace Controllo_Qualita_Acqua_Form
 {
     public partial class CQAForm : Form
     {
+        const double PumpOutflowMlPerS = 50.0;
+        const double MlPerSToLPerS = 1.0 / 1000.0;
 
         string onText = "ATTIVO";
         string offText = "SPENTO";
@@ -62,7 +64,14 @@ namespace Controllo_Qualita_Acqua_Form
             capienzaSerbatoioTextBox.Text = Convert.ToString(capienzaSerbatoio);
             setCapienzaSerbatoio(capienzaSerbatoio);
             setIncomingFlowSpeed(0.05);
-            setOutgoingFlowSpeed(0.05);
+            // La pompa deve controllare lo scarico: a pompa spenta, nessun flusso in uscita.
+            setOutgoingFlowSpeed(0.0);
+            pumpSpeed = 0;
+            pompaButton.Text = turnOnText;
+            pompaTextBox.Text = offText;
+            guiPompa.BackColor = Color.LightPink;
+            // Evita confusione: il flusso uscita è controllato dalla pompa.
+            flussoUscitaTextBox.ReadOnly = true;
             volumeAcquaTextBox.Text = "0";
             mercurySingleDegreeGUIHeight = guiTermometerContainer.Height / (maxTemperature - minTemperature);
             electricitySingleWGUIHeight = guiElettricitaMisuraContainer.Height / (maxElectricityUsage - minElectricityUsage);
@@ -476,6 +485,7 @@ namespace Controllo_Qualita_Acqua_Form
             pompaButton.Text = turnOffText;
             pompaTextBox.Text = onText;
             guiPompa.BackColor = Color.LightGreen;
+            setOutgoingFlowSpeed(PumpOutflowMlPerS * MlPerSToLPerS);
         }
 
         private void turnOffPump()
@@ -485,6 +495,7 @@ namespace Controllo_Qualita_Acqua_Form
             pompaButton.Text = turnOnText;
             pompaTextBox.Text = offText;
             guiPompa.BackColor = Color.LightPink;
+            setOutgoingFlowSpeed(0.0);
         }
     }
 }
