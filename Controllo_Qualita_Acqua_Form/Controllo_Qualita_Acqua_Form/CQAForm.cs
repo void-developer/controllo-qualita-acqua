@@ -256,9 +256,9 @@ namespace Controllo_Qualita_Acqua_Form
 
             Color acquaSporca = Color.FromArgb(90, 60, 30); // Marrone scuro
 
-            int r = (int)(acquaSporca.R + t * (coloreAcquaPulita.R - acquaSporca.R));
-            int g = (int)(acquaSporca.G + t * (coloreAcquaPulita.G - acquaSporca.G));
-            int b = (int)(acquaSporca.B + t * (coloreAcquaPulita.B - acquaSporca.B));
+            int r = (int)(acquaSporca.R + t * (ColoreAcquaPulita.R - acquaSporca.R));
+            int g = (int)(acquaSporca.G + t * (ColoreAcquaPulita.G - acquaSporca.G));
+            int b = (int)(acquaSporca.B + t * (ColoreAcquaPulita.B - acquaSporca.B));
 
             Color waterColor = Color.FromArgb(r, g, b);
 
