@@ -1,55 +1,55 @@
-using System.Runtime.CompilerServices;
-
 namespace Controllo_Qualita_Acqua_Form
 {
     public partial class CQAForm : Form
     {
-        const double PumpOutflowMlPerS = 50.0;
-        const double MlPerSToLPerS = 1.0 / 1000.0;
+        private const double PumpOutflowMlPerS = 50.0;
+        private const double MlPerSToLPerS = 1.0 / 1000.0;
 
-        string onText = "ATTIVO";
-        string offText = "SPENTO";
+        private const string StatusOnText = "ATTIVO";
+        private const string StatusOffText = "SPENTO";
 
-        string turnOnText = "ACCENDI";
-        string turnOffText = "SPEGNI";
+        private const string TurnOnText = "ACCENDI";
+        private const string TurnOffText = "SPEGNI";
 
-        Color coloreAcquaPulita = Color.FromArgb(0, 170, 255);
+        private static readonly Color ColoreAcquaPulita = Color.FromArgb(0, 170, 255);
+        private static readonly Color DeviceOnColor = Color.LightGreen;
+        private static readonly Color DeviceOffColor = Color.LightPink;
 
-        int delta;
-        double startingTemperature = 25.0;
-        double currentTemperature;
-        double temperatureChangeSpeed = 0.3;
-        double maxTemperature = 50.0;
-        double minTemperature = 0.0;
-        double highTemperatureAlarmThreshold = 30.0;
-        double lowTemperatureAlarmThreshold = 20.0;
+        private int delta;
+        private readonly double startingTemperature = 25.0;
+        private double currentTemperature;
+        private readonly double temperatureChangeSpeed = 0.3;
+        private readonly double maxTemperature = 50.0;
+        private readonly double minTemperature = 0.0;
+        private readonly double highTemperatureAlarmThreshold = 30.0;
+        private readonly double lowTemperatureAlarmThreshold = 20.0;
 
-        double mercurySingleDegreeGUIHeight;
+        private double mercurySingleDegreeGUIHeight;
 
-        int purity;
-        double purityDecreaseSpeed = 0.7;
-        double uvLightPurifyingSpeed = 3;
+        private int purity;
+        private readonly double purityDecreaseSpeed = 0.7;
+        private readonly double uvLightPurifyingSpeed = 3;
 
-        double currentWaterVolume = 50;
-        double waterFlushSpeed = 0.3;
-        double waterIncomingFlowSpeed;
-        double waterOutgoingFlowSpeed;
+        private double currentWaterVolume = 50;
+        private readonly double waterFlushSpeed = 0.3;
+        private double waterIncomingFlowSpeed;
+        private double waterOutgoingFlowSpeed;
 
-        double capienzaSerbatoio = 80;
-        double waterLevelSingleLitreGUIHeight;
+        private double capienzaSerbatoio = 80;
+        private double waterLevelSingleLitreGUIHeight;
 
-        double currentElectricityW;
-        double maxElectricityUsage = 6000;
-        double minElectricityUsage = 0;
+        private double currentElectricityW;
+        private readonly double maxElectricityUsage = 6000;
+        private readonly double minElectricityUsage = 0;
 
-        double uvLightW = 2500;
-        double sinkW = 1000;
-        double outPumpW = 1000;
-        double thermostatW = 3500;
+        private readonly double uvLightW = 2500;
+        private readonly double sinkW = 1000;
+        private readonly double outPumpW = 1000;
+        private readonly double thermostatW = 3500;
 
-        double electricitySingleWGUIHeight;
+        private double electricitySingleWGUIHeight;
 
-        int pumpSpeed;
+        private int pumpSpeed;
 
         public CQAForm()
         {
@@ -58,7 +58,7 @@ namespace Controllo_Qualita_Acqua_Form
 
         private void CQAForm_Load(object sender, EventArgs e)
         {
-            //inizializzazione variabili di stato
+            // Inizializzazione variabili di stato
             currentTemperature = startingTemperature;
             purity = 100;
             capienzaSerbatoioTextBox.Text = Convert.ToString(capienzaSerbatoio);
@@ -66,10 +66,7 @@ namespace Controllo_Qualita_Acqua_Form
             setIncomingFlowSpeed(0.05);
             // La pompa deve controllare lo scarico: a pompa spenta, nessun flusso in uscita.
             setOutgoingFlowSpeed(0.0);
-            pumpSpeed = 0;
-            pompaButton.Text = turnOnText;
-            pompaTextBox.Text = offText;
-            guiPompa.BackColor = Color.LightPink;
+            setPumpUi(isOn: false);
             // Evita confusione: il flusso uscita è controllato dalla pompa.
             flussoUscitaTextBox.ReadOnly = true;
             volumeAcquaTextBox.Text = "0";
@@ -111,7 +108,7 @@ namespace Controllo_Qualita_Acqua_Form
 
 
 
-            //aggiorno grafica
+            // Aggiorno grafica
             setPanelHeightFromBottom(guiMercurio, (int)(mercurySingleDegreeGUIHeight * currentTemperature));
             updateTemperatureAlarms();
             updateTemperature();
@@ -122,7 +119,7 @@ namespace Controllo_Qualita_Acqua_Form
 
         private bool isThermostatActive()
         {
-            return termostatoTextBox.Text != null && termostatoTextBox.Text != "";
+            return !string.IsNullOrWhiteSpace(termostatoTextBox.Text);
         }
 
         private double getThermostatTemperature()
@@ -165,7 +162,7 @@ namespace Controllo_Qualita_Acqua_Form
                 return;
             }
             termostatoTextBox.Text = Convert.ToString(startingTemperature);
-            termostatoButton.Text = turnOffText;
+            termostatoButton.Text = TurnOffText;
         }
 
         private void turnOffThermostat()
@@ -174,8 +171,8 @@ namespace Controllo_Qualita_Acqua_Form
             {
                 return;
             }
-            termostatoTextBox.Text = null;
-            termostatoButton.Text = turnOnText; termostatoButton.Text = turnOnText;
+            termostatoTextBox.Text = string.Empty;
+            termostatoButton.Text = TurnOnText;
         }
 
         private void updateTemperatureAlarms()
@@ -184,17 +181,16 @@ namespace Controllo_Qualita_Acqua_Form
             {
                 turnOnAlarm(guiAllarmeTemperaturaAlta, allarmeTemperaturaAltaTextBox);
             }
-            else if (currentTemperature < highTemperatureAlarmThreshold)
+            else
             {
                 turnOffAlarm(guiAllarmeTemperaturaAlta, allarmeTemperaturaAltaTextBox);
             }
-
 
             if (currentTemperature < lowTemperatureAlarmThreshold)
             {
                 turnOnAlarm(guiAllarmeTemperaturaBassa, allarmeTemperaturaBassaTextBox);
             }
-            else if (currentTemperature > lowTemperatureAlarmThreshold)
+            else
             {
                 turnOffAlarm(guiAllarmeTemperaturaBassa, allarmeTemperaturaBassaTextBox);
             }
@@ -203,13 +199,13 @@ namespace Controllo_Qualita_Acqua_Form
         private void turnOnAlarm(Panel panel, TextBox alarmTextBox)
         {
             panel.BackColor = Color.Red;
-            alarmTextBox.Text = onText;
+            alarmTextBox.Text = StatusOnText;
         }
 
         private void turnOffAlarm(Panel panel, TextBox alarmTextBox)
         {
             panel.BackColor = Color.Green;
-            alarmTextBox.Text = offText;
+            alarmTextBox.Text = StatusOffText;
         }
 
         private void updateTemperature()
@@ -219,15 +215,13 @@ namespace Controllo_Qualita_Acqua_Form
 
         private bool isUVLightOn()
         {
-            return luceUVTextBox.Text == onText;
+            return luceUVTextBox.Text == StatusOnText;
         }
 
         private void turnOffUVLight()
         {
             decreaseElectricityKW(uvLightW);
-            luceUVTextBox.Text = offText;
-            luceUVButton.Text = turnOnText;
-            guiUV_Lamp.BackColor = Color.LightPink;
+            setUvUi(isOn: false);
         }
 
         private void turnOnUVLight()
@@ -236,10 +230,7 @@ namespace Controllo_Qualita_Acqua_Form
             {
                 return;
             }
-            luceUVTextBox.Text = onText;
-            luceUVButton.Text = turnOffText;
-            guiUV_Lamp.BackColor = Color.LightGreen;
-
+            setUvUi(isOn: true);
         }
 
         private void luceUVButton_Click(object sender, EventArgs e)
@@ -257,13 +248,13 @@ namespace Controllo_Qualita_Acqua_Form
         private void updateWaterPurityGUI(double purity)
         {
             // Clamp sicurezza
-            purity = Math.Max(0, Math.Min(100, purity));
+            purity = Math.Clamp(purity, 0, 100);
 
             // Normalizzazione (0 = sporca, 1 = pulita)
             double t = purity / 100.0;
 
 
-            Color acquaSporca = Color.FromArgb(90, 60, 30);    // Marrone scuro
+            Color acquaSporca = Color.FromArgb(90, 60, 30); // Marrone scuro
 
             int r = (int)(acquaSporca.R + t * (coloreAcquaPulita.R - acquaSporca.R));
             int g = (int)(acquaSporca.G + t * (coloreAcquaPulita.G - acquaSporca.G));
@@ -273,7 +264,7 @@ namespace Controllo_Qualita_Acqua_Form
 
             guiAcqua.BackColor = waterColor;
 
-            //aggiorno testo
+            // Aggiorno testo
             purityPercTextBox.Text = Convert.ToString(purity);
         }
 
@@ -300,12 +291,12 @@ namespace Controllo_Qualita_Acqua_Form
             newWaterVolume += timeDelta * waterIncomingFlowSpeed;
             newWaterVolume -= timeDelta * waterOutgoingFlowSpeed;
 
-            return Math.Min(capienzaSerbatoio, Math.Max(0, newWaterVolume));
+            return Math.Clamp(newWaterVolume, 0, capienzaSerbatoio);
         }
 
         private bool isFlushOpen()
         {
-            return scaricoAcquaTextBox.Text == onText;
+            return scaricoAcquaTextBox.Text == StatusOnText;
         }
 
         private bool isIncomingFlowOn()
@@ -367,7 +358,7 @@ namespace Controllo_Qualita_Acqua_Form
         {
             if (isIncomingFlowOn())
             {
-                guiFlussoIngresso.BackColor = coloreAcquaPulita;
+                guiFlussoIngresso.BackColor = ColoreAcquaPulita;
             }
             else
             {
@@ -376,7 +367,7 @@ namespace Controllo_Qualita_Acqua_Form
 
             if (isFlushOpen())
             {
-                guiScarico.BackColor = coloreAcquaPulita;
+                guiScarico.BackColor = ColoreAcquaPulita;
             }
             else
             {
@@ -385,7 +376,7 @@ namespace Controllo_Qualita_Acqua_Form
 
             if (isOutgoingFlowOn())
             {
-                guiTuboUscita.BackColor = coloreAcquaPulita;
+                guiTuboUscita.BackColor = ColoreAcquaPulita;
             }
             else
             {
@@ -415,15 +406,15 @@ namespace Controllo_Qualita_Acqua_Form
             {
                 return;
             }
-            scaricoButton.Text = turnOffText;
-            scaricoAcquaTextBox.Text = onText;
+            scaricoButton.Text = TurnOffText;
+            scaricoAcquaTextBox.Text = StatusOnText;
         }
 
         private void turnOffSink()
         {
             decreaseElectricityKW(sinkW);
-            scaricoButton.Text = turnOnText;
-            scaricoAcquaTextBox.Text = offText;
+            scaricoButton.Text = TurnOnText;
+            scaricoAcquaTextBox.Text = StatusOffText;
         }
 
         private void capienzaSerbatoioTextBox_TextChanged(object sender, EventArgs e)
@@ -432,7 +423,7 @@ namespace Controllo_Qualita_Acqua_Form
             setCapienzaSerbatoio(nuovaCapienzaSerbatoio);
         }
 
-        // ritorna false se non e' stato possibile aumentare l'elittricita' (se  sta gia' al massimo)
+        // Ritorna false se non è stato possibile aumentare l'elettricità (se sta già al massimo)
         private bool increaseElectricityKW(double kW)
         {
             double newKw = currentElectricityW + kW;
@@ -466,10 +457,11 @@ namespace Controllo_Qualita_Acqua_Form
 
         private void pompaButton_Click(object sender, EventArgs e)
         {
-            if(pumpSpeed>0)
+            if (pumpSpeed > 0)
             {
                 turnOffPump();
-            } else
+            }
+            else
             {
                 turnOnPump();
             }
@@ -477,25 +469,34 @@ namespace Controllo_Qualita_Acqua_Form
 
         private void turnOnPump()
         {
-            if(!increaseElectricityKW(outPumpW))
+            if (!increaseElectricityKW(outPumpW))
             {
                 return;
             }
-            pumpSpeed = 1;
-            pompaButton.Text = turnOffText;
-            pompaTextBox.Text = onText;
-            guiPompa.BackColor = Color.LightGreen;
+            setPumpUi(isOn: true);
             setOutgoingFlowSpeed(PumpOutflowMlPerS * MlPerSToLPerS);
         }
 
         private void turnOffPump()
         {
             decreaseElectricityKW(outPumpW);
-            pumpSpeed = 0;
-            pompaButton.Text = turnOnText;
-            pompaTextBox.Text = offText;
-            guiPompa.BackColor = Color.LightPink;
+            setPumpUi(isOn: false);
             setOutgoingFlowSpeed(0.0);
+        }
+
+        private void setPumpUi(bool isOn)
+        {
+            pumpSpeed = isOn ? 1 : 0;
+            pompaButton.Text = isOn ? TurnOffText : TurnOnText;
+            pompaTextBox.Text = isOn ? StatusOnText : StatusOffText;
+            guiPompa.BackColor = isOn ? DeviceOnColor : DeviceOffColor;
+        }
+
+        private void setUvUi(bool isOn)
+        {
+            luceUVTextBox.Text = isOn ? StatusOnText : StatusOffText;
+            luceUVButton.Text = isOn ? TurnOffText : TurnOnText;
+            guiUV_Lamp.BackColor = isOn ? DeviceOnColor : DeviceOffColor;
         }
     }
 }
